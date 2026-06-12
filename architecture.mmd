@@ -1,0 +1,73 @@
+graph TB
+    subgraph Frontend["Frontend (Next.js)"]
+        UI[Page Router / Shell]
+        Dashboard[Dashboard]
+        Chat[Chat Interface - SSE Streaming]
+        Tickets[Ticket View]
+        Login[Login Screen]
+    end
+
+    subgraph API["API Layer (FastAPI)"]
+        Auth[JWT Auth + RBAC]
+        Endpoints[REST + Streaming Endpoints]
+        Persistence[Conversation & Ticket Persistence]
+    end
+
+    subgraph Orchestration["Agent Orchestration (LangGraph)"]
+        Orch[Orchestrator - Intent Classifier]
+        Policy[Policy Agent]
+        Rewards[Rewards Agent]
+        Research[Research Agent]
+        Ticket[Ticket Agent]
+    end
+
+    subgraph Retrieval["RAG Layer"]
+        Retriever[Scoped Retriever - Role-filtered]
+        VectorDB[(ChromaDB - Local)]
+    end
+
+    subgraph Data["Data Layer"]
+        SQLite[(SQLite - Conversations & Tickets)]
+        CSV[Employee Directory CSV]
+    end
+
+    subgraph External["External Services"]
+        Anthropic[Anthropic Claude API]
+        Tavily[Tavily Web Search]
+        Langfuse[Langfuse / Phoenix - Observability]
+    end
+
+    UI --> Login
+    UI --> Dashboard
+    UI --> Chat
+    UI --> Tickets
+
+    Chat -->|SSE Stream| Endpoints
+    Dashboard -->|REST| Endpoints
+    Tickets -->|REST| Endpoints
+    Login -->|REST| Auth
+
+    Endpoints --> Auth
+    Auth --> CSV
+    Endpoints --> Persistence
+    Persistence --> SQLite
+    Endpoints --> Orch
+
+    Orch -->|policy| Policy
+    Orch -->|rewards| Rewards
+    Orch -->|research| Research
+    Orch -->|ticket| Ticket
+
+    Policy --> Retriever
+    Rewards --> Retriever
+    Research --> Retriever
+    Research --> Tavily
+    Retriever --> VectorDB
+
+    Policy --> Anthropic
+    Rewards --> Anthropic
+    Research --> Anthropic
+    Ticket --> Anthropic
+    Orch --> Anthropic
+
+    Endpoints -.-> Langfuse

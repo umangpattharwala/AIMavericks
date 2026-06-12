@@ -1,0 +1,29 @@
+# IBM ContextForge AI Gateway — local stack
+# Docs: https://ibm.github.io/mcp-context-forge/deployment/container/
+
+services:
+  coforge-contextforge-gateway:
+    image: ${CONTEXTFORGE_IMAGE:-ghcr.io/ibm/mcp-context-forge:v1.0.0-RC-3}
+    container_name: coforge-contextforge-gateway
+    ports:
+      - "${CONTEXTFORGE_HOST_PORT:-4444}:4444"
+    env_file:
+      - .env
+    environment:
+      HOST: 0.0.0.0
+      PORT: 4444
+    volumes:
+      - ./data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    networks:
+      - coforge-gateway-network
+
+networks:
+  coforge-gateway-network:
+    driver: bridge
